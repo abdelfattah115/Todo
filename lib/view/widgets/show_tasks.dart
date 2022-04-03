@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -16,6 +17,7 @@ class ShowTasks extends StatelessWidget {
   ShowTasks({Key? key}) : super(key: key);
 
   final TaskController taskController = Get.put(TaskController());
+
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -33,13 +35,14 @@ class ShowTasks extends StatelessWidget {
                 var task = taskController.taskList[index];
 
                 if (task.repeat == 'Daily' ||
-                    task.date == DateFormat.yMd().format(ShowDateBar.selectedDate) ||
+                    task.date ==
+                        DateFormat.yMd().format(ShowDateBar.selectedDate) ||
                     (task.repeat == 'Weekly' &&
                         ShowDateBar.selectedDate
-                            .difference(
-                            DateFormat.yMd().parse(task.date!))
-                            .inDays %
-                            7 ==
+                                    .difference(
+                                        DateFormat.yMd().parse(task.date!))
+                                    .inDays %
+                                7 ==
                             0) ||
                     (task.repeat == 'Monthly' &&
                         DateFormat.yMd().parse(task.date!).day ==
@@ -58,8 +61,33 @@ class ShowTasks extends StatelessWidget {
                     child: SlideAnimation(
                       horizontalOffset: 300,
                       child: FadeInAnimation(
-                        child: GestureDetector(
-                          onTap: () => _showBottomSheet(context, task),
+                        child: Slidable(
+                          key: ValueKey(task),
+                          startActionPane: ActionPane(
+                            motion: const StretchMotion(),
+                            children: [
+                              SlidableAction(
+                                onPressed: (context){
+                                  NotifyHelper().cancelScheduleNotification(task);
+                                  taskController.deleteTask(task);
+                                },
+                                backgroundColor: Colors.red.withOpacity(0.8),
+                                foregroundColor: Colors.white,
+                                icon: Icons.delete,
+                                label: 'delete',
+                              ),
+                              SlidableAction(
+                                onPressed: (context){
+                                  NotifyHelper().cancelScheduleNotification(task);
+                                  taskController.markTaskComplete(task.id!);
+                                },
+                                backgroundColor: Colors.green.withOpacity(0.8),
+                                foregroundColor: Colors.white,
+                                icon: Icons.done,
+                                label: 'done',
+                              ),
+                            ],
+                          ),
                           child: TaskTile(task),
                         ),
                       ),
@@ -130,115 +158,147 @@ class ShowTasks extends StatelessWidget {
     return taskController.getTasks();
   }
 
-  _showBottomSheet(BuildContext context, Task task) {
-    Get.bottomSheet(
-      SingleChildScrollView(
-        child: Container(
-          padding: const EdgeInsets.only(top: 4),
-          width: SizeConfig.screenWidth,
-          height: (SizeConfig.orientation == Orientation.landscape)
-              ? task.isCompleted == 1
-                  ? SizeConfig.screenHeight * 0.6
-                  : SizeConfig.screenHeight * 0.8
-              : task.isCompleted == 1
-                  ? SizeConfig.screenHeight * 0.30
-                  : SizeConfig.screenHeight * 0.39,
-          color: Get.isDarkMode ? darkHeaderClr : white,
-          child: Column(
-            children: [
-              Flexible(
-                child: Container(
-                  width: 120,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Get.isDarkMode ? Colors.grey[600] : Colors.grey[300],
-                  ),
-                ),
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              task.isCompleted == 1
-                  ? Container()
-                  : _buildBottomSheet(
-                      label: 'Task Completed',
-                      onTap: () {
-                        NotifyHelper().cancelScheduleNotification(task);
-                        taskController.markTaskComplete(task.id!);
-                        Get.back();
-                      },
-                      clr: primaryClr,
-                    ),
-              task.isCompleted == 1
-                  ? Container()
-                  : Divider(
-                      color: Get.isDarkMode ? Colors.grey : darkGreyClr,
-                      indent: 25,
-                      endIndent: 25,
-                    ),
-              _buildBottomSheet(
-                label: 'Delete Task',
-                onTap: () {
-                  NotifyHelper().cancelScheduleNotification(task);
-                  taskController.deleteTask(task);
-                  Get.back();
-                },
-                clr: Colors.red[300]!,
-              ),
-              Divider(
-                color: Get.isDarkMode ? Colors.grey : darkGreyClr,
-                indent: 25,
-                endIndent: 25,
-              ),
-              _buildBottomSheet(
-                label: 'Cancel',
-                onTap: () {
-                  Get.back();
-                },
-                clr: primaryClr,
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  // _showBottomSheet(BuildContext context, Task task) {
+  //   Get.bottomSheet(
+  //     SingleChildScrollView(
+  //       child: Container(
+  //         padding: const EdgeInsets.only(top: 4),
+  //         width: SizeConfig.screenWidth,
+  //         height: (SizeConfig.orientation == Orientation.landscape)
+  //             ? task.isCompleted == 1
+  //                 ? SizeConfig.screenHeight * 0.6
+  //                 : SizeConfig.screenHeight * 0.8
+  //             : task.isCompleted == 1
+  //                 ? SizeConfig.screenHeight * 0.30
+  //                 : SizeConfig.screenHeight * 0.39,
+  //         color: Get.isDarkMode ? darkHeaderClr : white,
+  //         child: Column(
+  //           children: [
+  //             Flexible(
+  //               child: Container(
+  //                 width: 120,
+  //                 height: 6,
+  //                 decoration: BoxDecoration(
+  //                   borderRadius: BorderRadius.circular(10),
+  //                   color: Get.isDarkMode ? Colors.grey[600] : Colors.grey[300],
+  //                 ),
+  //               ),
+  //             ),
+  //             const SizedBox(
+  //               height: 20,
+  //             ),
+  //             task.isCompleted == 1
+  //                 ? Container()
+  //                 : _buildBottomSheet(
+  //                     label: 'Task Completed',
+  //                     onTap: () {
+  //                       NotifyHelper().cancelScheduleNotification(task);
+  //                       taskController.markTaskComplete(task.id!);
+  //                       Get.back();
+  //                     },
+  //                     clr: primaryClr,
+  //                   ),
+  //             task.isCompleted == 1
+  //                 ? Container()
+  //                 : Divider(
+  //                     color: Get.isDarkMode ? Colors.grey : darkGreyClr,
+  //                     indent: 25,
+  //                     endIndent: 25,
+  //                   ),
+  //             _buildBottomSheet(
+  //               label: 'Delete Task',
+  //               onTap: () {
+  //                 NotifyHelper().cancelScheduleNotification(task);
+  //                 taskController.deleteTask(task);
+  //                 Get.back();
+  //               },
+  //               clr: Colors.red[300]!,
+  //             ),
+  //             Divider(
+  //               color: Get.isDarkMode ? Colors.grey : darkGreyClr,
+  //               indent: 25,
+  //               endIndent: 25,
+  //             ),
+  //             _buildBottomSheet(
+  //               label: 'Cancel',
+  //               onTap: () {
+  //                 Get.back();
+  //               },
+  //               clr: primaryClr,
+  //             ),
+  //             const SizedBox(
+  //               height: 20,
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+  //
+  // _buildBottomSheet({
+  //   required String label,
+  //   required Function() onTap,
+  //   required Color clr,
+  //   bool isClose = false,
+  // }) {
+  //   return GestureDetector(
+  //     onTap: onTap,
+  //     child: Container(
+  //       margin: const EdgeInsets.symmetric(vertical: 4),
+  //       height: 65,
+  //       width: SizeConfig.screenWidth * 0.9,
+  //       decoration: BoxDecoration(
+  //         border: Border.all(
+  //           width: 2,
+  //           color: isClose
+  //               ? Get.isDarkMode
+  //                   ? Colors.grey[600]!
+  //                   : Colors.grey[300]!
+  //               : clr,
+  //         ),
+  //         borderRadius: BorderRadius.circular(20),
+  //         color: isClose ? Colors.transparent : clr,
+  //       ),
+  //       child: Center(
+  //         child: Text(
+  //           label,
+  //           style:
+  //               isClose ? titleStyle : titleStyle.copyWith(color: Colors.white),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  _buildBottomSheet({
-    required String label,
-    required Function() onTap,
-    required Color clr,
-    bool isClose = false,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        height: 65,
-        width: SizeConfig.screenWidth * 0.9,
-        decoration: BoxDecoration(
-          border: Border.all(
-            width: 2,
-            color: isClose
-                ? Get.isDarkMode
-                    ? Colors.grey[600]!
-                    : Colors.grey[300]!
-                : clr,
+  widgetLeftDismissible() {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Row(
+        children: [
+          Container(
+            alignment: Alignment.centerLeft,
+            color: Colors.green,
+            child: IconButton(
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.done,
+                  size: 25,
+                )),
           ),
-          borderRadius: BorderRadius.circular(20),
-          color: isClose ? Colors.transparent : clr,
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style:
-                isClose ? titleStyle : titleStyle.copyWith(color: Colors.white),
+          Container(
+            alignment: Alignment.centerLeft,
+            color: Colors.red,
+            child: IconButton(
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.delete,
+                  size: 25,
+                )),
           ),
-        ),
+        ],
       ),
     );
   }
