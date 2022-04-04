@@ -6,6 +6,7 @@ A new Flutter project.
 Todo App is a Simple flutter app for organizing the build of daily tasks using flutter widgets, SQLite, GetX state management and Flutter Local Notifications.
 
 ### Usage Libraries
+
  - get_storage:
  - get:
  - flutter_local_notifications:
