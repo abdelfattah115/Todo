@@ -3,7 +3,8 @@
 A new Flutter project.
 
 ## Description
-Todo App is a Simple flutter app for organizing the build of daily tasks using flutter widgets, SQLite, GetX state management and Flutter Local Notifications.
+Todo App is a Simple flutter app for organizing the build of daily, weekly, and Monthly tasks 
+using flutter widgets,SQLite, GetX state management and Flutter Local Notifications.
 
 ### Usage Libraries
 
